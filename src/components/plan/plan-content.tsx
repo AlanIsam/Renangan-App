@@ -2,11 +2,12 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Sparkles, Loader2 } from "lucide-react"
+import { Sparkles, Loader2, ChevronDown, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { PlanCalendar } from "@/components/plan/plan-calendar"
-import { apiPost } from "@/lib/api-client"
+import { ConfirmModal } from "@/components/confirm-modal"
+import { apiPost, apiDelete } from "@/lib/api-client"
 import type { PlanWithDays } from "@/lib/queries"
 
 type SerializedPlan = Omit<PlanWithDays, "createdAt" | "weekStart"> & { createdAt: string; weekStart: string }
@@ -66,6 +67,19 @@ export function PlanContent({ currentPlan, allPlans }: { currentPlan: Serialized
   const todayIdx = today === 0 ? 6 : today - 1
 
   const todayPlan = currentPlan?.days.find((d) => d.dayOfWeek === todayIdx)
+
+  const [expandedPastPlan, setExpandedPastPlan] = useState<string | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<SerializedPlan | null>(null)
+  const [deleting, setDeleting] = useState(false)
+
+  const handleDeletePlan = async () => {
+    if (!deleteTarget) return
+    setDeleting(true)
+    await apiDelete(`/api/plan/${deleteTarget.id}`)
+    setDeleting(false)
+    setDeleteTarget(null)
+    router.refresh()
+  }
 
   const handleGenerate = async () => {
     setError("")
@@ -215,21 +229,89 @@ export function PlanContent({ currentPlan, allPlans }: { currentPlan: Serialized
       {pastPlans.length > 0 && (
         <div className="space-y-2">
           <h3 className="text-sm font-semibold">Past Plans</h3>
-          {pastPlans.map((plan) => (
-            <div key={plan.id} className="rounded-xl border border-border bg-card p-4 flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">{plan.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  Week of {formatWeekRange(plan.weekStart)}
-                </p>
+          {pastPlans.map((plan) => {
+            const isOpen = expandedPastPlan === plan.id
+            return (
+              <div key={plan.id} className="rounded-xl border border-border bg-card overflow-hidden">
+                <button
+                  onClick={() => setExpandedPastPlan(isOpen ? null : plan.id)}
+                  className="w-full flex items-center gap-4 p-4 text-left hover:bg-accent/20 transition-colors"
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="text-sm font-semibold">{plan.name}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground">
+                        Week of {formatWeekRange(plan.weekStart)}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {plan.days.map((d) => typeIcons[d.type] ?? "").join(" ")}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setDeleteTarget(plan) }}
+                    className="p-2 rounded-md hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-colors"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                  <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`} />
+                </button>
+
+                {isOpen && (
+                  <div className="border-t border-border px-4 pb-4 pt-3">
+                    {plan.summary && (
+                      <p className="text-xs text-muted-foreground italic mb-3">{plan.summary}</p>
+                    )}
+                    <div className="space-y-2">
+                      {plan.days.map((day) => {
+                        const style = typeStyles[day.type] ?? { bg: "bg-card", text: "text-muted-foreground", border: "border-border" }
+                        return (
+                          <div key={day.id} className="rounded-lg bg-background p-3">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-base">{typeIcons[day.type] ?? "📋"}</span>
+                              <span className="text-sm font-semibold">{DAY_NAMES[day.dayOfWeek]}</span>
+                              <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${style.text} bg-black/20`}>
+                                {day.type.toUpperCase()}
+                              </span>
+                              <span className={`text-xs ${style.text}`}>{day.focus}</span>
+                            </div>
+                            {day.items.length > 0 && (
+                              <div className="space-y-1 pl-7">
+                                {day.items.map((item) => (
+                                  <div key={item.id} className="flex items-center gap-2 text-xs">
+                                    {item.tag && (
+                                      <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded shrink-0 ${tagColors[item.tag] ?? "bg-muted text-muted-foreground"}`}>
+                                        {item.tag}
+                                      </span>
+                                    )}
+                                    <span className="text-muted-foreground">{item.name}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
-              <p className="text-xs text-muted-foreground">
-                {plan.days.map((d) => typeIcons[d.type] ?? "").join(" ")}
-              </p>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
+
+      <ConfirmModal
+        open={!!deleteTarget}
+        title="Delete Plan"
+        message={deleteTarget ? `Remove "${deleteTarget.name}" (Week of ${formatWeekRange(deleteTarget.weekStart)})? This cannot be undone.` : ""}
+        confirmLabel="Delete"
+        loading={deleting}
+        onConfirm={handleDeletePlan}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   )
 }
