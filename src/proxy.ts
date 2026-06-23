@@ -22,19 +22,6 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/login", request.url))
   }
 
-  if (path.startsWith("/api/")) {
-    const origin = request.headers.get("origin")
-    const referer = request.headers.get("referer")
-    const appHost = request.nextUrl.origin
-
-    const originValid = !origin || origin === appHost
-    const refererValid = !referer || referer.startsWith(appHost)
-
-    if (!originValid || !refererValid) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
-    }
-  }
-
   return NextResponse.next()
 }
 
