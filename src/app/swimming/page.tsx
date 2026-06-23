@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"
+
 import { loadSwimActivities } from "@/lib/queries"
 import { SwimmingContent } from "@/components/swimming/swimming-content"
 

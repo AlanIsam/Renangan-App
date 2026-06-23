@@ -582,6 +582,58 @@ Browse at https://ui.shadcn.com
 
 ---
 
+### 20. Edit Swim Form (`src/components/swimming/edit-swim-form.tsx`)
+
+**What it does:** Modal form to edit an existing swim session. Pre-fills all fields from the swim record. Submits `PUT /api/activities/[id]`.
+
+---
+
+### 21. Edit Workout Form (`src/components/strength/edit-workout-form.tsx`)
+
+**What it does:** Modal form to edit an existing workout. Pre-fills workout info and all exercises. Can add/remove exercises. Submits `PUT /api/workouts/[id]`.
+
+---
+
+### 22. API Client (`src/lib/api-client.ts`)
+
+**What it does:** Centralized fetch helpers that attach the `x-api-token` header to every request.
+
+**Exports:**
+
+| Function | Purpose |
+|----------|---------|
+| `apiPost(url, body)` | POST with auth token |
+| `apiPut(url, body)` | PUT with auth token |
+| `apiDelete(url)` | DELETE with auth token |
+
+All components use these instead of raw `fetch()`.
+
+---
+
+### 23. Rate Limiter (`src/lib/rate-limit.ts`)
+
+**What it does:** In-memory rate limiting per key. Tracks request counts within a time window.
+
+| Change | Where | How |
+|--------|-------|-----|
+| Plan generation limit | `route.ts` call to `rateLimit()` | Change `5` (max requests) or `60 * 60 * 1000` (window) |
+| Activity creation limit | `route.ts` | Change `30` |
+| Workout creation limit | `route.ts` | Change `20` |
+
+---
+
+### 24. Middleware (`src/middleware.ts`)
+
+**What it does:** Runs on every `/api/*` request. Validates origin/referer headers match the app's domain. Checks `x-api-token` header against `API_SECRET` env var.
+
+| Check | What it blocks |
+|-------|---------------|
+| Origin validation | Cross-origin requests from other websites |
+| Referer validation | Requests with spoofed referers |
+| API token | Direct curl/Postman/script calls without the token |
+
+---
+
 ## Key Files Outside `src/`
 
 | File | Purpose |
@@ -590,8 +642,65 @@ Browse at https://ui.shadcn.com
 | `prisma/schema.prisma` | Database schema |
 | `prisma/dev.db` | SQLite database file |
 | `prisma/seed.ts` | CSV → database import script |
-| `.env` | Environment variables (`DATABASE_URL`) |
-| `next.config.ts` | Next.js config |
+| `.env` | Environment variables (`DATABASE_URL`, `GEMINI_API_KEY`, `API_SECRET`, `NEXT_PUBLIC_API_TOKEN`) |
+| `next.config.ts` | Next.js config (`output: "standalone"` for Docker) |
+| `Dockerfile` | Multi-stage Docker build for Cloud Run |
+| `.dockerignore` | Excludes node_modules, .next, .env, *.db from Docker |
+
+---
+
+## Deployment
+
+### Docker Build
+
+```bash
+# Build image
+docker build -t swim-tracker .
+
+# Run locally
+docker run -p 8080:8080 \
+  -e GEMINI_API_KEY="your-key" \
+  -e API_SECRET="your-secret" \
+  -e NEXT_PUBLIC_API_TOKEN="your-secret" \
+  -e DATABASE_URL="file:./data/dev.db" \
+  swim-tracker
+```
+
+### Cloud Run Deployment
+
+```bash
+# Set project
+gcloud config set project YOUR_PROJECT_ID
+
+# Enable services (one-time)
+gcloud services enable run.googleapis.com artifactregistry.googleapis.com
+
+# Create artifact repo (one-time)
+gcloud artifacts repositories create swim-tracker --repository-format=docker --location=REGION
+
+# Build and push
+gcloud builds submit --tag REGION-docker.pkg.dev/YOUR_PROJECT_ID/swim-tracker/app
+
+# Deploy
+gcloud run deploy swim-tracker \
+  --image REGION-docker.pkg.dev/YOUR_PROJECT_ID/swim-tracker/app \
+  --platform managed \
+  --region REGION \
+  --allow-unauthenticated \
+  --port 8080 \
+  --memory 512Mi \
+  --set-env-vars "GEMINI_API_KEY=key,API_SECRET=secret,NEXT_PUBLIC_API_TOKEN=secret,DATABASE_URL=file:./data/dev.db"
+```
+
+### Database Persistence on Cloud Run
+
+Cloud Run is stateless — SQLite file is lost on restart. Options:
+
+| Option | How |
+|--------|-----|
+| **Cloud Run Volume Mount** | Mount Cloud Storage bucket to `/app/data` |
+| **Turso** (hosted SQLite) | Change `DATABASE_URL` to Turso URL — same adapter already installed |
+| **Cloud SQL** | Switch to PostgreSQL (requires schema tweaks) |
 
 ---
 
@@ -636,6 +745,17 @@ Click the trash icon on any swim row or workout card → confirm in the modal
 ### Change the anomaly filter threshold
 1. `src/lib/parse-activities.ts` → change `pacePerHundred < 110`
 2. Note: this only affects CSV imports (seed script). Manual entries are not filtered.
+
+### Edit data
+Click the pencil icon on any swim row or workout card → edit in the pre-filled modal → Save Changes
+
+### Change API security secret
+1. Generate a new secret
+2. `.env` → update both `API_SECRET` and `NEXT_PUBLIC_API_TOKEN` to the same value
+3. Restart the dev server
+
+### Deploy to Cloud Run
+See the Deployment section above for full commands.
 
 ### Reset the database
 ```bash

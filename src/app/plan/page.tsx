@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"
+
 import { getCurrentWeekPlan, getAllPlans } from "@/lib/queries"
 import { PlanContent } from "@/components/plan/plan-content"
 

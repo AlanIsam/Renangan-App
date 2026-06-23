@@ -32,13 +32,13 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <TooltipProvider>
-          <SidebarProvider>
+          <SidebarProvider defaultOpen={false}>
             <AppSidebar />
-            <main className="flex-1">
-              <header className="flex h-12 items-center border-b border-border px-4">
+            <main className="flex-1 min-w-0">
+              <header className="sticky top-0 z-40 flex h-12 items-center border-b border-border bg-background px-4">
                 <SidebarTrigger />
               </header>
-              <div className="p-6">{children}</div>
+              <div className="p-4 md:p-6">{children}</div>
             </main>
           </SidebarProvider>
         </TooltipProvider>

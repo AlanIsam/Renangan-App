@@ -1,0 +1,8 @@
+node_modules
+.next
+.env
+*.db
+uploads/*.csv
+PROGRESS.md
+.git
+prisma/seed.ts

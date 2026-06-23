@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"
+
 import { loadWorkouts } from "@/lib/queries"
 import { StrengthContent } from "@/components/strength/strength-content"
 

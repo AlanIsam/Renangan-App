@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic"
+
 import { loadActivities, loadWorkouts, getCurrentWeekPlan } from "@/lib/queries"
 import { DashboardContent } from "@/components/dashboard/dashboard-content"
 

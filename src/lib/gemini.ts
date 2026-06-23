@@ -2,7 +2,9 @@ import { GoogleGenAI } from "@google/genai"
 import type { Activity } from "@/lib/activity-utils"
 import type { WorkoutWithExercises } from "@/lib/queries"
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! })
+function getAI() {
+  return new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! })
+}
 
 type PlanDay = {
   dayOfWeek: number
@@ -101,6 +103,7 @@ Rules:
 - For gym days, include specific sets, reps, and suggested weights based on their history
 - For swim days, include distances and target paces based on their recent performance`
 
+  const ai = getAI()
   const MAX_RETRIES = 3
   const MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
 
