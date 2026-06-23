@@ -1,8 +1,7 @@
 node_modules
 .next
 .env
-prisma/dev.db
-uploads/*.csv
-PROGRESS.md
+*.db
 .git
+PROGRESS.md
 prisma/seed.ts
