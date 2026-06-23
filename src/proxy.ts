@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server"
 
 const API_SECRET = process.env.API_SECRET
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   if (!request.nextUrl.pathname.startsWith("/api/")) {
     return NextResponse.next()
   }
