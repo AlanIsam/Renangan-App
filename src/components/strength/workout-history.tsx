@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { ChevronDown, Trash2, Pencil } from "lucide-react"
 import { ConfirmModal } from "@/components/confirm-modal"
 import { EditWorkoutForm } from "@/components/strength/edit-workout-form"
+import { apiDelete } from "@/lib/api-client"
 import type { WorkoutWithExercises } from "@/lib/queries"
 
 const categoryColors: Record<string, string> = {
@@ -30,7 +31,7 @@ export function WorkoutHistory({ workouts }: { workouts: WorkoutWithExercises[] 
   const handleDelete = async () => {
     if (!deleteTarget) return
     setDeleting(true)
-    await fetch(`/api/workouts/${deleteTarget.id}`, { method: "DELETE" })
+    await apiDelete(`/api/workouts/${deleteTarget.id}`)
     setDeleting(false)
     setDeleteTarget(null)
     router.refresh()

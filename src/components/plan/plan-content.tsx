@@ -6,6 +6,7 @@ import { Sparkles, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { PlanCalendar } from "@/components/plan/plan-calendar"
+import { apiPost } from "@/lib/api-client"
 import type { PlanWithDays } from "@/lib/queries"
 
 type SerializedPlan = Omit<PlanWithDays, "createdAt" | "weekStart"> & { createdAt: string; weekStart: string }
@@ -71,11 +72,7 @@ export function PlanContent({ currentPlan, allPlans }: { currentPlan: Serialized
     setGenerating(true)
 
     try {
-      const res = await fetch("/api/plan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: prompt || undefined }),
-      })
+      const res = await apiPost("/api/plan", { prompt: prompt || undefined })
 
       if (!res.ok) {
         const data = await res.json()

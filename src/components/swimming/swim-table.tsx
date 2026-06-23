@@ -6,6 +6,7 @@ import { ArrowUpDown, ChevronLeft, ChevronRight, Trash2, Pencil } from "lucide-r
 import { Button } from "@/components/ui/button"
 import { ConfirmModal } from "@/components/confirm-modal"
 import { EditSwimForm } from "@/components/swimming/edit-swim-form"
+import { apiDelete } from "@/lib/api-client"
 import { type Activity, formatPace, formatDuration } from "@/lib/activity-utils"
 
 type SortKey = "date" | "distance" | "pace" | "movingTime" | "avgHeartRate"
@@ -39,7 +40,7 @@ export function SwimTable({ swims }: { swims: Activity[] }) {
   const handleDelete = async () => {
     if (!deleteTarget) return
     setDeleting(true)
-    await fetch(`/api/activities/${deleteTarget.id}`, { method: "DELETE" })
+    await apiDelete(`/api/activities/${deleteTarget.id}`)
     setDeleting(false)
     setDeleteTarget(null)
     router.refresh()

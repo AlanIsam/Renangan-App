@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Plus, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { apiPost } from "@/lib/api-client"
 
 export function AddSwimForm() {
   const router = useRouter()
@@ -37,18 +38,14 @@ export function AddSwimForm() {
     if (!distance || distance <= 0) { setError("Enter a valid distance"); setSaving(false); return }
     if (movingTime <= 0) { setError("Enter a valid duration"); setSaving(false); return }
 
-    const res = await fetch("/api/activities", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        date: form.date,
-        name: form.name || "Swim Session",
-        type: "Swim",
-        distance,
-        movingTime,
-        avgHeartRate: form.avgHeartRate ? parseFloat(form.avgHeartRate) : null,
-        poolLength: form.poolLength ? parseFloat(form.poolLength) : null,
-      }),
+    const res = await apiPost("/api/activities", {
+      date: form.date,
+      name: form.name || "Swim Session",
+      type: "Swim",
+      distance,
+      movingTime,
+      avgHeartRate: form.avgHeartRate ? parseFloat(form.avgHeartRate) : null,
+      poolLength: form.poolLength ? parseFloat(form.poolLength) : null,
     })
 
     if (!res.ok) {

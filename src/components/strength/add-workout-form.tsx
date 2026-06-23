@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Plus, X, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { apiPost } from "@/lib/api-client"
 
 const CATEGORIES = [
   "Back", "Chest", "Shoulders", "Arms", "Legs", "Core", "Groin", "Recovery", "Prehab", "Cardio",
@@ -75,16 +76,12 @@ export function AddWorkoutForm() {
       if (!ex.reps && !ex.duration) { setError(`${ex.name}: enter reps or duration`); setSaving(false); return }
     }
 
-    const res = await fetch("/api/workouts", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        date: form.date,
-        name: form.name,
-        duration: form.duration ? parseFloat(form.duration) : null,
-        notes: form.notes || null,
-        exercises: parsedExercises,
-      }),
+    const res = await apiPost("/api/workouts", {
+      date: form.date,
+      name: form.name,
+      duration: form.duration ? parseFloat(form.duration) : null,
+      notes: form.notes || null,
+      exercises: parsedExercises,
     })
 
     if (!res.ok) {

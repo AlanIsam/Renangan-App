@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Plus, X, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { apiPut } from "@/lib/api-client"
 import type { WorkoutWithExercises } from "@/lib/queries"
 
 const CATEGORIES = [
@@ -83,16 +84,12 @@ export function EditWorkoutForm({ workout, onClose }: EditWorkoutFormProps) {
       if (!ex.reps && !ex.duration) { setError(`${ex.name}: enter reps or duration`); setSaving(false); return }
     }
 
-    const res = await fetch(`/api/workouts/${workout.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        date: form.date,
-        name: form.name,
-        duration: form.duration ? parseFloat(form.duration) : null,
-        notes: form.notes || null,
-        exercises: parsedExercises,
-      }),
+    const res = await apiPut(`/api/workouts/${workout.id}`, {
+      date: form.date,
+      name: form.name,
+      duration: form.duration ? parseFloat(form.duration) : null,
+      notes: form.notes || null,
+      exercises: parsedExercises,
     })
 
     if (!res.ok) {

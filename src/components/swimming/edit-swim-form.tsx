@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { apiPut } from "@/lib/api-client"
 import type { Activity } from "@/lib/activity-utils"
 
 type EditSwimFormProps = {
@@ -40,17 +41,13 @@ export function EditSwimForm({ swim, onClose }: EditSwimFormProps) {
     if (!distance || distance <= 0) { setError("Enter a valid distance"); setSaving(false); return }
     if (movingTime <= 0) { setError("Enter a valid duration"); setSaving(false); return }
 
-    const res = await fetch(`/api/activities/${swim.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        date: form.date,
-        name: form.name || "Swim Session",
-        distance,
-        movingTime,
-        avgHeartRate: form.avgHeartRate ? parseFloat(form.avgHeartRate) : null,
-        poolLength: form.poolLength ? parseFloat(form.poolLength) : null,
-      }),
+    const res = await apiPut(`/api/activities/${swim.id}`, {
+      date: form.date,
+      name: form.name || "Swim Session",
+      distance,
+      movingTime,
+      avgHeartRate: form.avgHeartRate ? parseFloat(form.avgHeartRate) : null,
+      poolLength: form.poolLength ? parseFloat(form.poolLength) : null,
     })
 
     if (!res.ok) {
