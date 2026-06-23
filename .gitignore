@@ -39,3 +39,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/src/generated/prisma
+
+# user data
+/uploads/*.csv
+*.db
+
+# seed data
+activities.csv
+
+# session progress
+PROGRESS.md

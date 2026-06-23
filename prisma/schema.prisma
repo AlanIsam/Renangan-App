@@ -1,0 +1,92 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Activity {
+  id           String   @id @default(cuid())
+  date         DateTime
+  name         String
+  type         String
+  elapsedTime  Float    @default(0)
+  movingTime   Float    @default(0)
+  distance     Float    @default(0)
+  maxHeartRate Float?
+  avgHeartRate Float?
+  calories     Float?
+  avgSpeed     Float?
+  poolLength   Float?
+  source       String   @default("manual")
+  createdAt    DateTime @default(now())
+
+  @@index([type])
+  @@index([date])
+}
+
+model Workout {
+  id        String     @id @default(cuid())
+  date      DateTime
+  name      String
+  duration  Float?
+  notes     String?
+  createdAt DateTime   @default(now())
+  exercises Exercise[]
+
+  @@index([date])
+}
+
+model Exercise {
+  id        String  @id @default(cuid())
+  workoutId String
+  workout   Workout @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+  name      String
+  category  String
+  sets      Int
+  reps      Int?
+  weight    Float?
+  duration  Float?
+  orderIdx  Int     @default(0)
+
+  @@index([workoutId])
+}
+
+model Plan {
+  id        String    @id @default(cuid())
+  name      String
+  weekStart DateTime
+  active    Boolean   @default(true)
+  summary   String?
+  createdAt DateTime  @default(now())
+  days      PlanDay[]
+
+  @@index([weekStart])
+}
+
+model PlanDay {
+  id        String         @id @default(cuid())
+  planId    String
+  plan      Plan           @relation(fields: [planId], references: [id], onDelete: Cascade)
+  dayOfWeek Int
+  type      String
+  focus     String
+  notes     String?
+  items     PlanDayItem[]
+
+  @@index([planId])
+}
+
+model PlanDayItem {
+  id        String  @id @default(cuid())
+  dayId     String
+  day       PlanDay @relation(fields: [dayId], references: [id], onDelete: Cascade)
+  name      String
+  detail    String?
+  tag       String?
+  orderIdx  Int     @default(0)
+
+  @@index([dayId])
+}
