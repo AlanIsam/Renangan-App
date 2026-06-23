@@ -11,8 +11,9 @@ export function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
-  const authToken = request.cookies.get(AUTH_COOKIE)?.value
-  const isAuthed = authToken === API_SECRET
+  const cookieToken = request.cookies.get(AUTH_COOKIE)?.value
+  const headerToken = request.headers.get("x-api-token")
+  const isAuthed = cookieToken === API_SECRET || headerToken === API_SECRET
 
   if (!isAuthed) {
     if (path.startsWith("/api/")) {
@@ -31,13 +32,6 @@ export function proxy(request: NextRequest) {
 
     if (!originValid || !refererValid) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
-    }
-
-    if (API_SECRET) {
-      const token = request.headers.get("x-api-token")
-      if (token !== API_SECRET) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-      }
     }
   }
 
