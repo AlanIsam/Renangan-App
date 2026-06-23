@@ -50,8 +50,9 @@ COPY --from=builder /app/src/generated ./src/generated
 COPY docker-entrypoint.sh ./
 RUN chmod +x docker-entrypoint.sh
 
-# Create data directory for SQLite
+# Create data directory and copy existing database if present
 RUN mkdir -p /app/data && chown -R nextjs:nodejs /app/data /app/prisma
+COPY --chown=nextjs:nodejs dev.db* /app/data/
 
 USER nextjs
 

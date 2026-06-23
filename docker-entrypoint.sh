@@ -1,11 +1,9 @@
 #!/bin/sh
-# Create database tables if they don't exist
-DB_PATH=$(echo "$DATABASE_URL" | sed 's|file:||' | sed 's|^\.\/||')
-
-npx prisma migrate deploy --schema=./prisma/schema.prisma 2>/dev/null
-
-if [ $? -ne 0 ]; then
-  echo "Prisma migrate failed, creating tables directly..."
+# Use existing database if present, otherwise create tables
+if [ -f /app/data/dev.db ]; then
+  echo "Using existing database"
+else
+  echo "No database found, creating tables..."
   node -e "
     const { createClient } = require('@libsql/client');
     const client = createClient({ url: process.env.DATABASE_URL || 'file:./data/dev.db' });
@@ -28,5 +26,4 @@ if [ $? -ne 0 ]; then
   "
 fi
 
-# Start the server
 exec node server.js
