@@ -1,3 +1,10 @@
+export type SwimSplit = {
+  id: string
+  distance: number
+  time: number
+  orderIdx: number
+}
+
 export type Activity = {
   id: string
   date: Date
@@ -11,6 +18,7 @@ export type Activity = {
   calories: number | null
   avgSpeed: number | null
   poolLength: number | null
+  splits?: SwimSplit[]
 }
 
 export type TimeRange = "3m" | "6m" | "1y" | "all"

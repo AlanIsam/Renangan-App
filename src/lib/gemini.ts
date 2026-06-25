@@ -49,6 +49,14 @@ function buildContext(swims: Activity[], workouts: WorkoutWithExercises[], notes
       context += `- ${s.date.toLocaleDateString("en-AU")}: ${s.distance}m in ${Math.round(s.movingTime / 60)}min (${pace})`
       if (s.avgHeartRate) context += `, HR ${s.avgHeartRate}bpm`
       context += "\n"
+      if (s.splits && s.splits.length > 0) {
+        for (const sp of s.splits) {
+          const splitPace = sp.distance > 0 && sp.time > 0
+            ? `${Math.floor((sp.time / sp.distance) * 100 / 60)}:${String(Math.round((sp.time / sp.distance) * 100 % 60)).padStart(2, "0")}/100m`
+            : "?"
+          context += `    Split ${sp.orderIdx + 1}: ${sp.distance}m in ${Math.round(sp.time)}s (${splitPace})\n`
+        }
+      }
     }
 
     // Totals

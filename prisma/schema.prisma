@@ -8,23 +8,35 @@ datasource db {
 }
 
 model Activity {
-  id           String   @id @default(cuid())
+  id           String      @id @default(cuid())
   date         DateTime
   name         String
   type         String
-  elapsedTime  Float    @default(0)
-  movingTime   Float    @default(0)
-  distance     Float    @default(0)
+  elapsedTime  Float       @default(0)
+  movingTime   Float       @default(0)
+  distance     Float       @default(0)
   maxHeartRate Float?
   avgHeartRate Float?
   calories     Float?
   avgSpeed     Float?
   poolLength   Float?
-  source       String   @default("manual")
-  createdAt    DateTime @default(now())
+  source       String      @default("manual")
+  createdAt    DateTime    @default(now())
+  splits       SwimSplit[]
 
   @@index([type])
   @@index([date])
+}
+
+model SwimSplit {
+  id         String   @id @default(cuid())
+  activityId String
+  activity   Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  distance   Float
+  time       Float
+  orderIdx   Int      @default(0)
+
+  @@index([activityId])
 }
 
 model Workout {

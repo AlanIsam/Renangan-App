@@ -10,7 +10,7 @@ export async function POST(request: Request) {
 
   const body = await request.json()
 
-  const { date, name, type, distance, movingTime, avgHeartRate, maxHeartRate, calories, poolLength } = body
+  const { date, name, type, distance, movingTime, avgHeartRate, maxHeartRate, calories, poolLength, splits } = body
 
   if (!date || !name || !type || distance == null || movingTime == null) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
@@ -39,6 +39,7 @@ export async function POST(request: Request) {
     maxHeartRate: maxHeartRate ?? null,
     calories: calories ?? null,
     poolLength: poolLength ?? null,
+    splits: Array.isArray(splits) ? splits.filter((s: { distance: number; time: number }) => s.distance > 0 && s.time > 0) : undefined,
   })
 
   return NextResponse.json(activity, { status: 201 })

@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { ArrowUpDown, ChevronLeft, ChevronRight, Trash2, Pencil } from "lucide-react"
+import { ArrowUpDown, ChevronLeft, ChevronRight, Trash2, Pencil, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ConfirmModal } from "@/components/confirm-modal"
 import { EditSwimForm } from "@/components/swimming/edit-swim-form"
@@ -36,6 +36,7 @@ export function SwimTable({ swims }: { swims: Activity[] }) {
   const [deleteTarget, setDeleteTarget] = useState<Activity | null>(null)
   const [deleting, setDeleting] = useState(false)
   const [editTarget, setEditTarget] = useState<Activity | null>(null)
+  const [expandedId, setExpandedId] = useState<string | null>(null)
 
   const handleDelete = async () => {
     if (!deleteTarget) return
@@ -161,46 +162,71 @@ export function SwimTable({ swims }: { swims: Activity[] }) {
 
       {/* Mobile cards */}
       <div className="md:hidden divide-y divide-border">
-        {pageSwims.map((swim, i) => (
-          <div key={swim.id || i} className="px-4 py-3">
-            <div className="flex items-center justify-between mb-2">
-              <div>
-                <p className="text-sm font-medium">{swim.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {swim.date.toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short", year: "2-digit" })}
-                </p>
+        {pageSwims.map((swim, i) => {
+          const hasSplits = swim.splits && swim.splits.length > 0
+          const isExpanded = expandedId === swim.id
+          return (
+            <div key={swim.id || i} className="px-4 py-3">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex-1" onClick={() => hasSplits && setExpandedId(isExpanded ? null : swim.id)}>
+                  <p className="text-sm font-medium">
+                    {swim.name}
+                    {hasSplits && <span className="text-[10px] text-muted-foreground ml-2">{swim.splits!.length} splits</span>}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {swim.date.toLocaleDateString("en-AU", { weekday: "short", day: "numeric", month: "short", year: "2-digit" })}
+                  </p>
+                </div>
+                <div className="flex gap-1">
+                  {hasSplits && (
+                    <button onClick={() => setExpandedId(isExpanded ? null : swim.id)} className="p-2 rounded-md hover:bg-accent text-muted-foreground transition-colors">
+                      <ChevronDown className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                    </button>
+                  )}
+                  <button onClick={() => setEditTarget(swim)} className="p-2 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors">
+                    <Pencil className="h-4 w-4" />
+                  </button>
+                  <button onClick={() => setDeleteTarget(swim)} className="p-2 rounded-md hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-colors">
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
-              <div className="flex gap-1">
-                <button onClick={() => setEditTarget(swim)} className="p-2 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors">
-                  <Pencil className="h-4 w-4" />
-                </button>
-                <button onClick={() => setDeleteTarget(swim)} className="p-2 rounded-md hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-colors">
-                  <Trash2 className="h-4 w-4" />
-                </button>
+              <div className="grid grid-cols-4 gap-2">
+                <div>
+                  <p className="text-[10px] text-muted-foreground uppercase">Distance</p>
+                  <p className="text-sm font-medium tabular-nums">
+                    {swim.distance >= 1000 ? `${(swim.distance / 1000).toFixed(1)}km` : `${swim.distance}m`}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-muted-foreground uppercase">Duration</p>
+                  <p className="text-sm tabular-nums">{formatDuration(swim.movingTime)}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-muted-foreground uppercase">Pace</p>
+                  <p className="text-sm font-bold tabular-nums">{formatPace(swim.distance, swim.movingTime)}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-muted-foreground uppercase">HR</p>
+                  <p className="text-sm tabular-nums">{swim.avgHeartRate ? `${swim.avgHeartRate}` : "--"}</p>
+                </div>
               </div>
+              {isExpanded && swim.splits && (
+                <div className="mt-3 pt-3 border-t border-border space-y-1.5">
+                  <p className="text-[10px] text-muted-foreground uppercase mb-1">Splits</p>
+                  {swim.splits.map((split, si) => (
+                    <div key={split.id} className="flex items-center gap-3 rounded-md bg-background px-3 py-2 text-xs">
+                      <span className="text-muted-foreground w-4">{si + 1}.</span>
+                      <span className="font-medium w-14">{split.distance}m</span>
+                      <span className="text-muted-foreground w-14">{formatDuration(split.time)}</span>
+                      <span className="font-bold">{formatPace(split.distance, split.time)}/100m</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-            <div className="grid grid-cols-4 gap-2">
-              <div>
-                <p className="text-[10px] text-muted-foreground uppercase">Distance</p>
-                <p className="text-sm font-medium tabular-nums">
-                  {swim.distance >= 1000 ? `${(swim.distance / 1000).toFixed(1)}km` : `${swim.distance}m`}
-                </p>
-              </div>
-              <div>
-                <p className="text-[10px] text-muted-foreground uppercase">Duration</p>
-                <p className="text-sm tabular-nums">{formatDuration(swim.movingTime)}</p>
-              </div>
-              <div>
-                <p className="text-[10px] text-muted-foreground uppercase">Pace</p>
-                <p className="text-sm font-bold tabular-nums">{formatPace(swim.distance, swim.movingTime)}</p>
-              </div>
-              <div>
-                <p className="text-[10px] text-muted-foreground uppercase">HR</p>
-                <p className="text-sm tabular-nums">{swim.avgHeartRate ? `${swim.avgHeartRate}` : "--"}</p>
-              </div>
-            </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       {/* Pagination */}
