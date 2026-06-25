@@ -31,7 +31,7 @@ function getWeekStart(date: Date): string {
   return d.toISOString().split("T")[0]
 }
 
-function buildContext(swims: Activity[], workouts: WorkoutWithExercises[]): string {
+function buildContext(swims: Activity[], workouts: WorkoutWithExercises[], notes?: string[]): string {
   let context = "## User's Training Data & Analysis\n\n"
 
   // ── Swim Data ──
@@ -220,15 +220,23 @@ function buildContext(swims: Activity[], workouts: WorkoutWithExercises[]): stri
 
   context += `\nToday is ${new Date().toLocaleDateString("en-AU", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}\n`
 
+  if (notes && notes.length > 0) {
+    context += "\n### User Context (important — factor these into your analysis):\n"
+    for (const note of notes) {
+      context += `- ${note}\n`
+    }
+  }
+
   return context
 }
 
 export async function generatePlan(
   swims: Activity[],
   workouts: WorkoutWithExercises[],
-  userPrompt?: string
+  userPrompt?: string,
+  notes?: string[]
 ): Promise<GeneratedPlan> {
-  const context = buildContext(swims, workouts)
+  const context = buildContext(swims, workouts, notes)
 
   const systemPrompt = `You are an expert swim and strength training coach. Analyze the user's training data carefully, then generate a weekly plan that addresses their specific needs.
 
@@ -327,8 +335,9 @@ export type InsightReport = {
 export async function generateInsights(
   swims: Activity[],
   workouts: WorkoutWithExercises[],
+  notes?: string[]
 ): Promise<InsightReport> {
-  const context = buildContext(swims, workouts)
+  const context = buildContext(swims, workouts, notes)
 
   const prompt = `You are a data analyst specializing in athletic performance. Analyze this training data and provide honest, data-driven feedback. Don't be generic — reference specific numbers, dates, and trends from the data.
 

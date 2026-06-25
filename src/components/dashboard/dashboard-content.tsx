@@ -7,6 +7,7 @@ import { PaceChart } from "@/components/dashboard/pace-chart"
 import { VolumeChart } from "@/components/dashboard/volume-chart"
 import { RecentSwims } from "@/components/dashboard/recent-swims"
 import { AIInsights } from "@/components/dashboard/ai-insights"
+import { TrainingNotes } from "@/components/dashboard/training-notes"
 import {
   type Activity,
   type TimeRange,
@@ -236,6 +237,8 @@ export function DashboardContent({
       </div>
 
       <RecentSwims swims={recentSwims} />
+
+      <TrainingNotes />
 
       <AIInsights />
     </div>

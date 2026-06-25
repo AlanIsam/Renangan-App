@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { generateInsights } from "@/lib/gemini"
-import { loadSwimActivities, loadWorkouts } from "@/lib/queries"
+import { loadSwimActivities, loadWorkouts, loadTrainingNotes } from "@/lib/queries"
 import { rateLimit } from "@/lib/rate-limit"
 import type { Activity } from "@/lib/activity-utils"
 
@@ -16,9 +16,10 @@ export async function POST() {
 
   const swims = (await loadSwimActivities()) as Activity[]
   const workouts = await loadWorkouts()
+  const notes = (await loadTrainingNotes()).map((n) => n.content)
 
   try {
-    const insights = await generateInsights(swims, workouts)
+    const insights = await generateInsights(swims, workouts, notes)
     return NextResponse.json(insights)
   } catch (err) {
     const message = err instanceof Error ? err.message : "Failed to generate insights"

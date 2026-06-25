@@ -90,3 +90,9 @@ model PlanDayItem {
 
   @@index([dayId])
 }
+
+model TrainingNote {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now())
+}

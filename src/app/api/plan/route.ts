@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { generatePlan } from "@/lib/gemini"
-import { loadSwimActivities, loadWorkouts, savePlan, getMonday } from "@/lib/queries"
+import { loadSwimActivities, loadWorkouts, loadTrainingNotes, savePlan, getMonday } from "@/lib/queries"
 import { rateLimit } from "@/lib/rate-limit"
 import type { Activity } from "@/lib/activity-utils"
 
@@ -36,10 +36,11 @@ export async function POST(request: Request) {
 
   const swims = (await loadSwimActivities()) as Activity[]
   const workouts = await loadWorkouts()
+  const notes = (await loadTrainingNotes()).map((n) => n.content)
   const weekStart = getMonday(new Date())
 
   try {
-    const generated = await generatePlan(swims, workouts, cleanPrompt)
+    const generated = await generatePlan(swims, workouts, cleanPrompt, notes)
 
     const plan = await savePlan({
       name: generated.name,

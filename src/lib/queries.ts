@@ -280,6 +280,22 @@ export async function updateWorkout(id: string, data: {
   })
 }
 
+export async function loadTrainingNotes() {
+  return prisma.trainingNote.findMany({ orderBy: { createdAt: "asc" } })
+}
+
+export async function createTrainingNote(content: string) {
+  return prisma.trainingNote.create({ data: { content } })
+}
+
+export async function updateTrainingNote(id: string, content: string) {
+  return prisma.trainingNote.update({ where: { id }, data: { content } })
+}
+
+export async function deleteTrainingNote(id: string) {
+  return prisma.trainingNote.delete({ where: { id } })
+}
+
 export async function createActivity(data: {
   date: Date
   name: string
