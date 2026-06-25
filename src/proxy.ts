@@ -7,7 +7,13 @@ const AUTH_COOKIE = "swim-auth"
 export function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname
 
-  if (path === "/login" || path === "/api/auth/login") {
+  if (
+    path === "/login" ||
+    path === "/api/auth/login" ||
+    path === "/manifest.json" ||
+    path === "/sw.js" ||
+    path.startsWith("/icon-")
+  ) {
     return NextResponse.next()
   }
 
