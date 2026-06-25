@@ -1,10 +1,12 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Brain, Loader2, TrendingUp, AlertTriangle, Info, Lightbulb, Waves, Dumbbell } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { apiPost } from "@/lib/api-client"
 import type { InsightReport } from "@/lib/gemini"
+
+type StoredReport = InsightReport & { createdAt?: string }
 
 const typeIcon = {
   positive: <TrendingUp className="h-4 w-4 text-emerald-400" />,
@@ -19,9 +21,17 @@ const typeBg = {
 }
 
 export function AIInsights() {
-  const [report, setReport] = useState<InsightReport | null>(null)
+  const [report, setReport] = useState<StoredReport | null>(null)
   const [loading, setLoading] = useState(false)
+  const [loadingInitial, setLoadingInitial] = useState(true)
   const [error, setError] = useState("")
+
+  useEffect(() => {
+    fetch("/api/insights")
+      .then((r) => r.json())
+      .then((data) => { if (data) setReport(data) })
+      .finally(() => setLoadingInitial(false))
+  }, [])
 
   const handleGenerate = async () => {
     setError("")
@@ -46,6 +56,14 @@ export function AIInsights() {
     }
   }
 
+  if (loadingInitial) {
+    return (
+      <div className="rounded-xl border border-border bg-card p-6 text-center">
+        <Loader2 className="h-6 w-6 text-muted-foreground mx-auto animate-spin" />
+      </div>
+    )
+  }
+
   if (!report) {
     return (
       <div className="rounded-xl border border-border bg-card p-6 text-center">
@@ -66,9 +84,16 @@ export function AIInsights() {
   return (
     <div className="rounded-xl border border-border bg-card p-5 space-y-5">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Brain className="h-5 w-5 text-primary" />
-          <h3 className="text-sm font-semibold">AI Training Analysis</h3>
+        <div>
+          <div className="flex items-center gap-2">
+            <Brain className="h-5 w-5 text-primary" />
+            <h3 className="text-sm font-semibold">AI Training Analysis</h3>
+          </div>
+          {report.createdAt && (
+            <p className="text-[10px] text-muted-foreground mt-0.5 pl-7">
+              Last updated {new Date(report.createdAt).toLocaleDateString("en-AU", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
+            </p>
+          )}
         </div>
         <Button variant="outline" size="sm" onClick={handleGenerate} disabled={loading} className="gap-1.5">
           {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Brain className="h-3.5 w-3.5" />}

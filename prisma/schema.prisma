@@ -96,3 +96,12 @@ model TrainingNote {
   content   String
   createdAt DateTime @default(now())
 }
+
+model InsightReport {
+  id              String   @id @default(cuid())
+  overall         String
+  swimInsights    String
+  strengthInsights String
+  recommendations String
+  createdAt       DateTime @default(now())
+}

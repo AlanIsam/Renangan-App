@@ -296,6 +296,19 @@ export async function deleteTrainingNote(id: string) {
   return prisma.trainingNote.delete({ where: { id } })
 }
 
+export async function getLatestInsightReport() {
+  return prisma.insightReport.findFirst({ orderBy: { createdAt: "desc" } })
+}
+
+export async function saveInsightReport(data: {
+  overall: string
+  swimInsights: string
+  strengthInsights: string
+  recommendations: string
+}) {
+  return prisma.insightReport.create({ data })
+}
+
 export async function createActivity(data: {
   date: Date
   name: string
