@@ -316,3 +316,85 @@ Rules:
 
   throw lastError ?? new Error("All models failed to generate a plan")
 }
+
+export type InsightReport = {
+  overall: string
+  swim: { title: string; detail: string; type: "positive" | "warning" | "neutral" }[]
+  strength: { title: string; detail: string; type: "positive" | "warning" | "neutral" }[]
+  recommendations: string[]
+}
+
+export async function generateInsights(
+  swims: Activity[],
+  workouts: WorkoutWithExercises[],
+): Promise<InsightReport> {
+  const context = buildContext(swims, workouts)
+
+  const prompt = `You are a data analyst specializing in athletic performance. Analyze this training data and provide honest, data-driven feedback. Don't be generic — reference specific numbers, dates, and trends from the data.
+
+${context}
+
+Respond with ONLY valid JSON, no markdown, no code blocks:
+{
+  "overall": "2-3 sentence big-picture summary of where this athlete is at right now. Reference specific data points.",
+  "swim": [
+    { "title": "Short insight title", "detail": "1-2 sentence detail with specific numbers from the data", "type": "positive|warning|neutral" }
+  ],
+  "strength": [
+    { "title": "Short insight title", "detail": "1-2 sentence detail with specific numbers from the data", "type": "positive|warning|neutral" }
+  ],
+  "recommendations": [
+    "Specific actionable recommendation based on the data"
+  ]
+}
+
+Rules:
+- "positive" = good trend or achievement
+- "warning" = declining trend, imbalance, or concern
+- "neutral" = observation, neither good nor bad
+- Provide 3-5 swim insights, 3-5 strength insights, and 3-5 recommendations
+- Every insight must reference actual numbers from the data (paces, weights, dates, frequencies)
+- If data is limited, say so — don't invent trends from insufficient data
+- Recommendations should be specific and actionable, not generic advice
+- Be direct and honest — this is an analyst report, not motivation`
+
+  const ai = getAI()
+  const MAX_RETRIES = 3
+  const MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-3.5-flash"]
+
+  let lastError: Error | null = null
+
+  for (const model of MODELS) {
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        const response = await ai.models.generateContent({
+          model,
+          contents: prompt,
+        })
+
+        const text = response.text?.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim()
+        if (!text) throw new Error("No response from Gemini")
+
+        return JSON.parse(text) as InsightReport
+      } catch (err) {
+        lastError = err instanceof Error ? err : new Error(String(err))
+        const isRetryable = lastError.message.includes("503") ||
+          lastError.message.includes("UNAVAILABLE") ||
+          lastError.message.includes("overloaded") ||
+          lastError.message.includes("high demand") ||
+          lastError.message.includes("RESOURCE_EXHAUSTED")
+
+        if (isRetryable && attempt < MAX_RETRIES) {
+          const delay = attempt * 2000
+          await new Promise((r) => setTimeout(r, delay))
+          continue
+        }
+
+        if (isRetryable) break
+        throw lastError
+      }
+    }
+  }
+
+  throw lastError ?? new Error("All models failed to generate insights")
+}
