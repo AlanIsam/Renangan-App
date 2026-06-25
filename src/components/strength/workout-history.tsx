@@ -56,9 +56,9 @@ export function WorkoutHistory({ workouts }: { workouts: WorkoutWithExercises[] 
 
         return (
           <div key={workout.id} className="rounded-xl border border-border bg-card overflow-hidden">
-            <button
+            <div
               onClick={() => setExpandedId(isOpen ? null : workout.id)}
-              className="w-full flex items-center gap-4 p-4 text-left hover:bg-accent/30 transition-colors"
+              className="w-full flex items-center gap-4 p-4 text-left hover:bg-accent/30 transition-colors cursor-pointer"
             >
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-1">
@@ -93,7 +93,7 @@ export function WorkoutHistory({ workouts }: { workouts: WorkoutWithExercises[] 
                 <Trash2 className="h-4 w-4" />
               </button>
               <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`} />
-            </button>
+            </div>
 
             {isOpen && (
               <div className="border-t border-border px-4 pb-4 pt-3 space-y-2">
