@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: "SwimTracker",
   description: "Track your swim progress and plan your workouts",
   manifest: "/manifest.json",
-  themeColor: "#15803d",
+  themeColor: "#0a0a0a",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
