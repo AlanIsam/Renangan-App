@@ -129,6 +129,17 @@ Form calls router.refresh() → page re-fetches from DB → UI updates
 | `poolLength` | Float? | Optional (meters) |
 | `source` | String | "csv" or "manual" |
 | `createdAt` | DateTime | Auto-set on creation |
+| `splits` | SwimSplit[] | Relation — optional per-set breakdown |
+
+**SwimSplit model** (per-set pace data within a swim):
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `id` | String | Auto-generated (cuid) |
+| `activityId` | String | Foreign key → Activity |
+| `distance` | Float | Split distance in meters (e.g. 200) |
+| `time` | Float | Split time in seconds |
+| `orderIdx` | Int | Display order within the swim |
 
 **Workout model** (gym sessions):
 
@@ -165,6 +176,25 @@ Form calls router.refresh() → page re-fetches from DB → UI updates
 | Add a new field | `prisma/schema.prisma` | Add field, run `npx prisma migrate dev --name <description>` |
 | Change field type | `prisma/schema.prisma` | Modify type, run migrate |
 | Add an index | `prisma/schema.prisma` | Add `@@index([fieldName])`, run migrate |
+
+**TrainingNote model** (persistent AI context):
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `id` | String | Auto-generated |
+| `content` | String | Note text (max 500 chars) |
+| `createdAt` | DateTime | Auto-set |
+
+**InsightReport model** (saved AI analysis):
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `id` | String | Auto-generated |
+| `overall` | String | Overall summary text |
+| `swimInsights` | String | JSON array of swim insights |
+| `strengthInsights` | String | JSON array of strength insights |
+| `recommendations` | String | JSON array of recommendations |
+| `createdAt` | DateTime | Auto-set |
 
 ### Database Commands
 
@@ -386,7 +416,7 @@ Singleton pattern — one Prisma instance shared across all requests. Uses `@pri
 
 ### 11. Swim Table (`src/components/swimming/swim-table.tsx`)
 
-**What it does:** Sortable, paginated table of all swim sessions.
+**What it does:** Sortable, paginated table of all swim sessions. Desktop shows table layout, mobile shows card layout with expandable splits.
 
 | Change | Where | How |
 |--------|-------|-----|
@@ -394,6 +424,8 @@ Singleton pattern — one Prisma instance shared across all requests. Uses `@pri
 | Add/remove columns | `columns` array + row JSX | Add column definition and render |
 | Default sort | `useState<SortKey>("date")` | Change to different column |
 | Sortable columns | `columns` array | Set `key: null` to disable sort on a column |
+
+Swims with splits show a chevron (▼) on mobile — tap to expand and see per-split pace breakdown.
 
 ---
 
@@ -422,16 +454,43 @@ Singleton pattern — one Prisma instance shared across all requests. Uses `@pri
 
 ### 14. Add Swim Form (`src/components/swimming/add-swim-form.tsx`)
 
-**What it does:** "Add Swim" button that expands into a form. Submits to `POST /api/activities`, refreshes page on success.
+**What it does:** Modal form with two modes: "Total Distance" (single entry) or "By Splits" (per-set breakdown). Submits to `POST /api/activities`.
 
-**Fields:** Date, Session Name, Distance (m), Duration (min + sec), Avg Heart Rate (optional), Pool Length
+**Modes:**
+- **Total Distance** — enter total distance + total time (simple, like before)
+- **By Splits** — add multiple rows, each with distance + time. Total auto-calculates
 
 | Change | Where | How |
 |--------|-------|-----|
 | Default pool length | `poolLength: "50"` in initial state | Change `"50"` |
 | Distance step | `step="25"` on distance input | Change increment value |
-| Add new fields | Add `<Input>` to form + include in POST body | Also update API route validation |
 | Default name | `"Swim Session"` fallback | Change string |
+
+---
+
+### 14b. Edit Swim Form (`src/components/swimming/edit-swim-form.tsx`)
+
+**What it does:** Same as Add form but pre-fills from existing swim. If the swim has splits, opens in "By Splits" mode with splits pre-filled. Submits to `PUT /api/activities/[id]`.
+
+Switching from "By Splits" to "Total Distance" removes existing splits on save.
+
+---
+
+### 14c. Training Notes (`src/components/dashboard/training-notes.tsx`)
+
+**What it does:** Inline list of persistent context notes on the dashboard. Notes are sent to AI with every plan generation and insights analysis. CRUD via `/api/notes`.
+
+| Change | Where | How |
+|--------|-------|-----|
+| Max note length | `content.trim().slice(0, 500)` in API route | Change `500` |
+
+---
+
+### 14d. AI Insights (`src/components/dashboard/ai-insights.tsx`)
+
+**What it does:** Persistent AI training analysis on the dashboard. Loads the latest saved report on page load. Click "Refresh" to generate a new analysis. Saved to database so it's visible across all sessions and devices.
+
+**Sections:** Overall summary, Swim insights (positive/warning/neutral), Strength insights, Recommendations
 
 ---
 
