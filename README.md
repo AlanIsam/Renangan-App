@@ -1,4 +1,4 @@
-# SwimTracker
+# RenanganApp - Swim Tracker
 
 A personal swim and strength training tracker with AI-powered workout planning. Built with Next.js, Tailwind CSS, and Gemini AI.
 
