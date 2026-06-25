@@ -50,7 +50,7 @@ AI-generated weekly plans based on your actual training data. Calendar view with
 
 ```bash
 # Clone and install
-git clone <your-repo-url>
+git clone https://github.com/AlanIsam/Renangan-App
 cd swim-tracker
 npm install
 
