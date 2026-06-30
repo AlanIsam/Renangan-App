@@ -54,7 +54,7 @@ function buildContext(swims: Activity[], workouts: WorkoutWithExercises[], notes
           const splitPace = sp.distance > 0 && sp.time > 0
             ? `${Math.floor((sp.time / sp.distance) * 100 / 60)}:${String(Math.round((sp.time / sp.distance) * 100 % 60)).padStart(2, "0")}/100m`
             : "?"
-          context += `    Split ${sp.orderIdx + 1}: ${sp.distance}m in ${Math.round(sp.time)}s (${splitPace})\n`
+          context += `    Split ${sp.orderIdx + 1}: ${sp.distance}m in ${Math.round(sp.time)}s (${splitPace})${sp.stroke ? ` [${sp.stroke}]` : ""}\n`
         }
       }
     }

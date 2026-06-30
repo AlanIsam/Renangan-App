@@ -6,9 +6,9 @@ import { X, Plus, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { apiPut } from "@/lib/api-client"
-import type { Activity } from "@/lib/activity-utils"
+import { SWIM_STROKES, type Activity } from "@/lib/activity-utils"
 
-type SplitEntry = { distance: string; minutes: string; seconds: string }
+type SplitEntry = { distance: string; minutes: string; seconds: string; stroke: string }
 
 type EditSwimFormProps = {
   swim: Activity
@@ -39,11 +39,12 @@ export function EditSwimForm({ swim, onClose }: EditSwimFormProps) {
           distance: String(s.distance),
           minutes: String(Math.floor(s.time / 60)),
           seconds: String(Math.round(s.time % 60)),
+          stroke: s.stroke ?? "Freestyle",
         }))
-      : [{ distance: "", minutes: "", seconds: "" }]
+      : [{ distance: "", minutes: "", seconds: "", stroke: "Freestyle" }]
   )
 
-  const addSplit = () => setSplits([...splits, { distance: "", minutes: "", seconds: "" }])
+  const addSplit = () => setSplits([...splits, { distance: "", minutes: "", seconds: "", stroke: "Freestyle" }])
   const removeSplit = (idx: number) => {
     if (splits.length <= 1) return
     setSplits(splits.filter((_, i) => i !== idx))
@@ -61,12 +62,13 @@ export function EditSwimForm({ swim, onClose }: EditSwimFormProps) {
 
     let distance: number
     let movingTime: number
-    let parsedSplits: { distance: number; time: number }[] | undefined
+    let parsedSplits: { distance: number; time: number; stroke: string }[] | undefined
 
     if (useSplits) {
       parsedSplits = splits.map((s) => ({
         distance: parseFloat(s.distance) || 0,
         time: ((parseInt(s.minutes) || 0) * 60) + (parseInt(s.seconds) || 0),
+        stroke: s.stroke,
       })).filter((s) => s.distance > 0 && s.time > 0)
 
       if (parsedSplits.length === 0) { setError("Add at least one valid split"); setSaving(false); return }
@@ -177,25 +179,39 @@ export function EditSwimForm({ swim, onClose }: EditSwimFormProps) {
               </div>
               <div className="space-y-2">
                 {splits.map((split, idx) => (
-                  <div key={idx} className="flex items-center gap-2 rounded-lg border border-border bg-background p-3">
-                    <span className="text-xs font-semibold text-muted-foreground w-5">{idx + 1}.</span>
-                    <div className="flex-1">
-                      <label className="text-[10px] text-muted-foreground">Dist (m)</label>
-                      <Input type="number" placeholder="200" value={split.distance} onChange={(e) => updateSplit(idx, "distance", e.target.value)} min="0" step="25" className="h-9" />
+                  <div key={idx} className="rounded-lg border border-border bg-background p-3 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold text-muted-foreground w-5">{idx + 1}.</span>
+                      <div className="flex-1">
+                        <label className="text-[10px] text-muted-foreground">Dist (m)</label>
+                        <Input type="number" placeholder="200" value={split.distance} onChange={(e) => updateSplit(idx, "distance", e.target.value)} min="0" step="25" className="h-9" />
+                      </div>
+                      <div className="w-20">
+                        <label className="text-[10px] text-muted-foreground">Min</label>
+                        <Input type="number" placeholder="4" value={split.minutes} onChange={(e) => updateSplit(idx, "minutes", e.target.value)} min="0" className="h-9" />
+                      </div>
+                      <div className="w-20">
+                        <label className="text-[10px] text-muted-foreground">Sec</label>
+                        <Input type="number" placeholder="30" value={split.seconds} onChange={(e) => updateSplit(idx, "seconds", e.target.value)} min="0" max="59" className="h-9" />
+                      </div>
+                      {splits.length > 1 && (
+                        <button type="button" onClick={() => removeSplit(idx)} className="p-1.5 rounded-md hover:bg-destructive/20 text-muted-foreground hover:text-destructive mt-4">
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      )}
                     </div>
-                    <div className="w-20">
-                      <label className="text-[10px] text-muted-foreground">Min</label>
-                      <Input type="number" placeholder="4" value={split.minutes} onChange={(e) => updateSplit(idx, "minutes", e.target.value)} min="0" className="h-9" />
+                    <div className="pl-7">
+                      <label className="text-[10px] text-muted-foreground mb-1 block">Stroke</label>
+                      <select
+                        value={split.stroke}
+                        onChange={(e) => updateSplit(idx, "stroke", e.target.value)}
+                        className="h-8 rounded-md border border-border bg-background px-2 text-xs w-full"
+                      >
+                        {SWIM_STROKES.map((stroke) => (
+                          <option key={stroke} value={stroke}>{stroke}</option>
+                        ))}
+                      </select>
                     </div>
-                    <div className="w-20">
-                      <label className="text-[10px] text-muted-foreground">Sec</label>
-                      <Input type="number" placeholder="30" value={split.seconds} onChange={(e) => updateSplit(idx, "seconds", e.target.value)} min="0" max="59" className="h-9" />
-                    </div>
-                    {splits.length > 1 && (
-                      <button type="button" onClick={() => removeSplit(idx)} className="p-1.5 rounded-md hover:bg-destructive/20 text-muted-foreground hover:text-destructive mt-4">
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    )}
                   </div>
                 ))}
               </div>

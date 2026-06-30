@@ -1,7 +1,11 @@
+export const SWIM_STROKES = ["Freestyle", "Backstroke", "Breaststroke", "Butterfly", "Mixed", "Drill", "Kick"] as const
+export type SwimStroke = typeof SWIM_STROKES[number]
+
 export type SwimSplit = {
   id: string
   distance: number
   time: number
+  stroke: string | null
   orderIdx: number
 }
 

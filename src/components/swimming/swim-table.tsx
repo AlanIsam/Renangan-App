@@ -220,6 +220,7 @@ export function SwimTable({ swims }: { swims: Activity[] }) {
                       <span className="font-medium w-14">{split.distance}m</span>
                       <span className="text-muted-foreground w-14">{formatDuration(split.time)}</span>
                       <span className="font-bold">{formatPace(split.distance, split.time)}/100m</span>
+                      {split.stroke && <span className="text-muted-foreground ml-auto">{split.stroke}</span>}
                     </div>
                   ))}
                 </div>

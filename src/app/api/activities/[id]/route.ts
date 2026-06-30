@@ -38,7 +38,7 @@ export async function PUT(
       movingTime,
       avgHeartRate: avgHeartRate ?? null,
       poolLength: poolLength ?? null,
-      splits: Array.isArray(splits) ? splits.filter((s: { distance: number; time: number }) => s.distance > 0 && s.time > 0) : undefined,
+      splits: Array.isArray(splits) ? splits.filter((s: { distance: number; time: number; stroke?: string }) => s.distance > 0 && s.time > 0) : undefined,
     })
     return NextResponse.json(updated)
   } catch {

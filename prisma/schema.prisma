@@ -34,6 +34,7 @@ model SwimSplit {
   activity   Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
   distance   Float
   time       Float
+  stroke     String?
   orderIdx   Int      @default(0)
 
   @@index([activityId])

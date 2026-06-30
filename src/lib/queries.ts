@@ -51,7 +51,7 @@ export async function loadSwimActivities(): Promise<Activity[]> {
     calories: r.calories,
     avgSpeed: r.avgSpeed,
     poolLength: r.poolLength,
-    splits: r.splits?.map((s) => ({ id: s.id, distance: s.distance, time: s.time, orderIdx: s.orderIdx })),
+    splits: r.splits?.map((s) => ({ id: s.id, distance: s.distance, time: s.time, stroke: s.stroke, orderIdx: s.orderIdx })),
   }))
 }
 
@@ -233,7 +233,7 @@ export async function updateActivity(id: string, data: {
   movingTime: number
   avgHeartRate?: number | null
   poolLength?: number | null
-  splits?: { distance: number; time: number }[]
+  splits?: { distance: number; time: number; stroke?: string | null }[]
 }) {
   const { splits, ...rest } = data
   await prisma.swimSplit.deleteMany({ where: { activityId: id } })
@@ -248,6 +248,7 @@ export async function updateActivity(id: string, data: {
           create: splits.map((s, i) => ({
             distance: s.distance,
             time: s.time,
+            stroke: s.stroke ?? null,
             orderIdx: i,
           })),
         },
@@ -335,7 +336,7 @@ export async function createActivity(data: {
   maxHeartRate?: number | null
   calories?: number | null
   poolLength?: number | null
-  splits?: { distance: number; time: number }[]
+  splits?: { distance: number; time: number; stroke?: string | null }[]
 }) {
   const { splits, ...rest } = data
   return prisma.activity.create({
@@ -348,6 +349,7 @@ export async function createActivity(data: {
           create: splits.map((s, i) => ({
             distance: s.distance,
             time: s.time,
+            stroke: s.stroke ?? null,
             orderIdx: i,
           })),
         },
