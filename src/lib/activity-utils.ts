@@ -22,6 +22,7 @@ export type Activity = {
   calories: number | null
   avgSpeed: number | null
   poolLength: number | null
+  notes: string | null
   splits?: SwimSplit[]
 }
 

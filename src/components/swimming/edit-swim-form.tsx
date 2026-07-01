@@ -31,6 +31,7 @@ export function EditSwimForm({ swim, onClose }: EditSwimFormProps) {
     seconds: String(Math.round(swim.movingTime % 60)),
     avgHeartRate: swim.avgHeartRate ? String(swim.avgHeartRate) : "",
     poolLength: swim.poolLength ? String(swim.poolLength) : "50",
+    notes: swim.notes ?? "",
   })
 
   const [splits, setSplits] = useState<SplitEntry[]>(
@@ -93,6 +94,7 @@ export function EditSwimForm({ swim, onClose }: EditSwimFormProps) {
       movingTime,
       avgHeartRate: form.avgHeartRate ? parseFloat(form.avgHeartRate) : null,
       poolLength: form.poolLength ? parseFloat(form.poolLength) : null,
+      notes: form.notes || null,
       splits: parsedSplits,
     })
 
@@ -230,6 +232,17 @@ export function EditSwimForm({ swim, onClose }: EditSwimFormProps) {
               <label className="text-sm font-medium text-muted-foreground mb-2 block">Pool Length (m)</label>
               <Input type="number" value={form.poolLength} onChange={(e) => setForm({ ...form, poolLength: e.target.value })} min="0" className="h-11 text-base" />
             </div>
+          </div>
+
+          <div>
+            <label className="text-sm font-medium text-muted-foreground mb-2 block">Session Notes (optional)</label>
+            <textarea
+              placeholder="e.g. S1-S3 easy warmup, S4-S6 max effort with fins, S7 recovery felt heavy legs"
+              value={form.notes}
+              onChange={(e) => setForm({ ...form, notes: e.target.value })}
+              rows={3}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring/50"
+            />
           </div>
 
           {error && <p className="text-sm text-destructive">{error}</p>}

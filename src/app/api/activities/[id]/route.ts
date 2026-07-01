@@ -24,7 +24,7 @@ export async function PUT(
   if (!id) return NextResponse.json({ error: "Missing ID" }, { status: 400 })
 
   const body = await request.json()
-  const { date, name, distance, movingTime, avgHeartRate, poolLength, splits } = body
+  const { date, name, distance, movingTime, avgHeartRate, poolLength, notes, splits } = body
 
   if (!date || !name || distance == null || movingTime == null) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
@@ -38,6 +38,7 @@ export async function PUT(
       movingTime,
       avgHeartRate: avgHeartRate ?? null,
       poolLength: poolLength ?? null,
+      notes: notes ? String(notes).slice(0, 1000) : null,
       splits: Array.isArray(splits) ? splits.filter((s: { distance: number; time: number; stroke?: string }) => s.distance > 0 && s.time > 0) : undefined,
     })
     return NextResponse.json(updated)

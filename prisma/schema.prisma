@@ -20,6 +20,7 @@ model Activity {
   calories     Float?
   avgSpeed     Float?
   poolLength   Float?
+  notes        String?
   source       String      @default("manual")
   createdAt    DateTime    @default(now())
   splits       SwimSplit[]

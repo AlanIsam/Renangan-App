@@ -211,6 +211,9 @@ export function SwimTable({ swims }: { swims: Activity[] }) {
                   <p className="text-sm tabular-nums">{swim.avgHeartRate ? `${swim.avgHeartRate}` : "--"}</p>
                 </div>
               </div>
+              {swim.notes && (
+                <p className="text-xs text-muted-foreground italic mt-2">{swim.notes}</p>
+              )}
               {isExpanded && swim.splits && (
                 <div className="mt-3 pt-3 border-t border-border space-y-1.5">
                   <p className="text-[10px] text-muted-foreground uppercase mb-1">Splits</p>

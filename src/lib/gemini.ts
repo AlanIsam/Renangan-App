@@ -49,6 +49,7 @@ function buildContext(swims: Activity[], workouts: WorkoutWithExercises[], notes
       context += `- ${s.date.toLocaleDateString("en-AU")}: ${s.distance}m in ${Math.round(s.movingTime / 60)}min (${pace})`
       if (s.avgHeartRate) context += `, HR ${s.avgHeartRate}bpm`
       context += "\n"
+      if (s.notes) context += `    Note: "${s.notes}"\n`
       if (s.splits && s.splits.length > 0) {
         for (const sp of s.splits) {
           const splitPace = sp.distance > 0 && sp.time > 0

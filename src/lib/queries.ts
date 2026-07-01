@@ -28,6 +28,7 @@ export async function loadActivities(): Promise<Activity[]> {
     calories: r.calories,
     avgSpeed: r.avgSpeed,
     poolLength: r.poolLength,
+    notes: r.notes,
   }))
 }
 
@@ -51,6 +52,7 @@ export async function loadSwimActivities(): Promise<Activity[]> {
     calories: r.calories,
     avgSpeed: r.avgSpeed,
     poolLength: r.poolLength,
+    notes: r.notes,
     splits: r.splits?.map((s) => ({ id: s.id, distance: s.distance, time: s.time, stroke: s.stroke, orderIdx: s.orderIdx })),
   }))
 }
@@ -233,6 +235,7 @@ export async function updateActivity(id: string, data: {
   movingTime: number
   avgHeartRate?: number | null
   poolLength?: number | null
+  notes?: string | null
   splits?: { distance: number; time: number; stroke?: string | null }[]
 }) {
   const { splits, ...rest } = data
@@ -336,6 +339,7 @@ export async function createActivity(data: {
   maxHeartRate?: number | null
   calories?: number | null
   poolLength?: number | null
+  notes?: string | null
   splits?: { distance: number; time: number; stroke?: string | null }[]
 }) {
   const { splits, ...rest } = data
