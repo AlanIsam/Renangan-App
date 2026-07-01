@@ -111,53 +111,70 @@ export function SwimTable({ swims }: { swims: Activity[] }) {
 
       {/* Desktop table */}
       <div className="hidden md:block overflow-x-auto">
-        <div className="min-w-[600px]">
-          <div className="flex items-center gap-2 px-5 py-2 border-b border-border text-xs font-medium text-muted-foreground uppercase tracking-wide">
-            {columns.map((col, i) => (
-              <div key={i} className={`${col.width} ${col.key ? "cursor-pointer hover:text-foreground select-none" : ""}`}
-                onClick={() => col.key && handleSort(col.key)}
-              >
-                <span className="flex items-center gap-1">
-                  {col.label}
-                  {col.key && sortKey === col.key && (
-                    <ArrowUpDown className="h-3 w-3" />
-                  )}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          <div className="divide-y divide-border">
+        <table className="w-full table-fixed">
+          <colgroup>
+            <col className="w-32" />
+            <col />
+            <col className="w-28" />
+            <col className="w-28" />
+            <col className="w-28" />
+            <col className="w-24" />
+            <col className="w-16" />
+          </colgroup>
+          <thead>
+            <tr className="border-b border-border text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              {columns.map((col, i) => (
+                <th
+                  key={i}
+                  className={`px-4 py-2 text-left font-medium ${col.key ? "cursor-pointer hover:text-foreground select-none" : ""}`}
+                  onClick={() => col.key && handleSort(col.key)}
+                >
+                  <span className="flex items-center gap-1">
+                    {col.label}
+                    {col.key && sortKey === col.key && (
+                      <ArrowUpDown className="h-3 w-3" />
+                    )}
+                  </span>
+                </th>
+              ))}
+              <th className="px-4 py-2 w-16" />
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
             {pageSwims.map((swim, i) => (
-              <div key={swim.id || i} className="flex items-center gap-2 px-5 py-2.5 text-sm hover:bg-accent/50">
-                <div className="w-28 text-xs text-muted-foreground">
+              <tr key={swim.id || i} className="hover:bg-accent/50 text-sm">
+                <td className="px-4 py-2.5 text-xs text-muted-foreground whitespace-nowrap">
                   {swim.date.toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "2-digit" })}
-                </div>
-                <div className="flex-1 text-sm font-medium truncate">
-                  {swim.name}
-                </div>
-                <div className="w-24 text-sm tabular-nums">
+                </td>
+                <td className="px-4 py-2.5 font-medium truncate max-w-0">
+                  <span className="block truncate">{swim.name}</span>
+                </td>
+                <td className="px-4 py-2.5 tabular-nums">
                   {swim.distance >= 1000 ? `${(swim.distance / 1000).toFixed(1)}km` : `${swim.distance}m`}
-                </div>
-                <div className="w-24 text-sm tabular-nums text-muted-foreground">
+                </td>
+                <td className="px-4 py-2.5 tabular-nums text-muted-foreground">
                   {formatDuration(swim.movingTime)}
-                </div>
-                <div className="w-24 text-sm font-bold tabular-nums">
+                </td>
+                <td className="px-4 py-2.5 font-bold tabular-nums">
                   {formatPace(swim.distance, swim.movingTime)}
-                </div>
-                <div className="w-20 text-sm tabular-nums text-muted-foreground">
+                </td>
+                <td className="px-4 py-2.5 tabular-nums text-muted-foreground">
                   {swim.avgHeartRate ? `${swim.avgHeartRate} bpm` : "--"}
-                </div>
-                <button onClick={() => setEditTarget(swim)} className="p-1.5 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors">
-                  <Pencil className="h-3.5 w-3.5" />
-                </button>
-                <button onClick={() => setDeleteTarget(swim)} className="p-1.5 rounded-md hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-colors">
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
-              </div>
+                </td>
+                <td className="px-4 py-2.5">
+                  <div className="flex gap-1">
+                    <button onClick={() => setEditTarget(swim)} className="p-1.5 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors">
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                    <button onClick={() => setDeleteTarget(swim)} className="p-1.5 rounded-md hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-colors">
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
             ))}
-          </div>
-        </div>
+          </tbody>
+        </table>
       </div>
 
       {/* Mobile cards */}
